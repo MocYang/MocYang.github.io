@@ -214,7 +214,7 @@
 </ul>
 <h2 id="JS-执行却不阻塞的秘密"><a href="#JS-执行却不阻塞的秘密" class="headerlink" title="JS 执行却不阻塞的秘密"></a>JS 执行却不阻塞的秘密</h2><p>在开始之前,先来看一张图:</p>
 <!-- ![事件循环](/Users/yangqixin/Documents/blog/事件循环.png) -->
-<p><img    class="lazyload" data-original="./images/%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="   ><span class="image-caption">事件循环</span></p>
+<p><img    class="lazyload" data-original="/./images/%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="   ><span class="image-caption">事件循环</span></p>
 <p>事件循环在浏览器的角色, 图片来源以不可考. </p>
 <p>不用看太久,有个概念就好,等你读完这篇文章,,就能看懂这张图了.</p>
 <p>首先要声明,事件循环与 JS  的执行(runtime)环境相关, 它与 JS 引擎本身无关. 常见的运行环境还有: 浏览器,Node.js, 每种运行环境可能都有自己实现事件循环的方式,而本文只探讨浏览器的事件循环(Node.js 的事件循环也是一个重要的主题,等哪天我搞懂了再来写).</p>
