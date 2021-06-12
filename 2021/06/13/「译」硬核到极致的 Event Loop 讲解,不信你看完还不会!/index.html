@@ -221,7 +221,7 @@
 <p>不用看太久,有个概念就好,等你读完这篇文章,,就能看懂这张图了.</p>
 <p>首先要声明,事件循环与 JS  的执行(runtime)环境相关, 它与 JS 引擎本身无关. 常见的运行环境还有: 浏览器,Node.js, 每种运行环境可能都有自己实现事件循环的方式,而本文只探讨浏览器的事件循环(Node.js 的事件循环也是一个重要的主题,等哪天我搞懂了再来写).</p>
 <p>为什么需要事件循环? 这与 JS 单次执行(单线程, 译者注.)的特性有关. 单次执行意味着 JS 一次只能执行一段程序,当 JS 在调用(invoke)一个函数时, 没有任何其他程序可以<em>同时</em>执行, 除非这个函数结束或者被中断(suspended), (后者可用 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator"> generator </a>实现).</p>
-<p>深入点说, JS 内部有一个栈(<code>call stack</code>), 称为执行上下文栈(<code>execution context stack</code>), 这个栈是用来追踪所调用的函数的. 每当程序调用一个函数,这个函数所产生的执行上下文便会被压入(<code>push</code>)栈; 当这个函数执行完毕,便会被弹出(<code>pop</code>). 函数的执行顺序遵循<em>后入先出</em> (LIFO, Last In First Out)的模式.</p>
+<p>深入点说, JS 内部有一个栈(<code>call stack</code>), 称为上下文执行栈(<code>execution context stack</code>), 这个栈是用来追踪所调用的函数的. 每当程序调用一个函数,这个函数所产生的执行上下文便会被压入(<code>push</code>)栈; 当这个函数执行完毕,便会被弹出(<code>pop</code>). 函数的执行顺序遵循<em>后入先出</em> (LIFO, Last In First Out)的模式.</p>
 <p>单次执行虽然简单易懂,但却有一个明显的问题: 假如一个函数执行过久,便会卡住之后函数的执行. 如果这些函数恰好是与 <em>UI Rendering</em> 相关的事,那画面便会延迟更新,这对使用体验来说是致命的.</p>
 <p>现在让我们来想一下,JS 有什么操作是相当耗时的? 无论你的答案是什么,我都已经想好了,那就是<em>请求</em>.在<code>AJAX</code> 大行其道的年代,大家都在用<code>XMLHTTPRequest(XHR)</code> 请求来请求去. 如果使用者网速特别慢,可能一次请求要花费好几秒,但为什么使用者的网页仍能正常渲染(render), 而没有丝毫延迟?</p>
 
