@@ -66,7 +66,7 @@
         loading: '[object Object]'
       },
       donate: {
-        enable: true,
+        enable: false,
         alipay: 'https://pic.izhaoo.com/alipay.jpg',
         wechat: 'https://pic.izhaoo.com/wechat.jpg'
       },
@@ -96,7 +96,7 @@
         },
       },
       qrcode: {
-        enable: true,
+        enable: false,
         type: 'url',
         image: 'https://pic.izhaoo.com/weapp-code.jpg',
       },
@@ -138,8 +138,6 @@
         <i class="iconfont iconhome j-navbar-back-home"></i>
       
       
-        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
-      
       
         <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
       
@@ -149,8 +147,6 @@
     <div class="right">
       <i class="iconfont iconmenu j-navbar-menu"></i>
     </div>
-    
-      <div id="qrcode-navbar"></div>
     
   </nav>
 
@@ -193,7 +189,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>六月 13, 2021</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1477</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>13649</span>
     </div>
   </div>
 </section>
@@ -213,41 +209,113 @@
 <li>JavaScript 是单线程(single threaded)的, 但却能发出 HTTP 请求而不阻塞(non-blocking), 这是怎么办到的?</li>
 </ul>
 <h2 id="JS-执行却不阻塞的秘密"><a href="#JS-执行却不阻塞的秘密" class="headerlink" title="JS 执行却不阻塞的秘密"></a>JS 执行却不阻塞的秘密</h2><p>在开始之前,先来看一张图:</p>
-<p><img    class="lazyload" data-original="/images/%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="   ><span class="image-caption">事件循环</span></p>
+<p><img   class="lazyload" data-original="/images/000001.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" ></p>
 <p>事件循环在浏览器的角色, 图片来源以不可考. </p>
 <p>不用看太久,有个概念就好,等你读完这篇文章,,就能看懂这张图了.</p>
 <p>首先要声明,事件循环与 JS  的执行(runtime)环境相关, 它与 JS 引擎本身无关. 常见的运行环境还有: 浏览器,Node.js, 每种运行环境可能都有自己实现事件循环的方式,而本文只探讨浏览器的事件循环(Node.js 的事件循环也是一个重要的主题,等哪天我搞懂了再来写).</p>
-<p>为什么需要事件循环? 这与 JS 单次执行(单线程, 译者注.)的特性有关. 单次执行意味着 JS 一次只能执行一段程序,当 JS 在调用(invoke)一个函数时, 没有任何其他程序可以<em>同时</em>执行, 除非这个函数结束或者被中断(suspended), (后者可用 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator"> generator </a>实现).</p>
+<p>为什么需要事件循环? 这与 JS 单次执行(单线程, 译者注.)的特性有关. 单次执行意味着 JS 一次只能执行一段程序,当 JS 在调用(invoke)一个函数时, 没有任何其他程序可以<em>同时</em>执行, 除非这个函数结束或者被中断(suspended), (后者可用 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator"> generator </a>[^1]实现).</p>
 <p>深入点说, JS 内部有一个栈(<code>call stack</code>), 称为上下文执行栈(<code>execution context stack</code>), 这个栈是用来追踪所调用的函数的. 每当程序调用一个函数,这个函数所产生的执行上下文便会被压入(<code>push</code>)栈; 当这个函数执行完毕,便会被弹出(<code>pop</code>). 函数的执行顺序遵循<em>后入先出</em> (LIFO, Last In First Out)的模式.</p>
 <p>单次执行虽然简单易懂,但却有一个明显的问题: 假如一个函数执行过久,便会卡住之后函数的执行. 如果这些函数恰好是与 <em>UI Rendering</em> 相关的事,那画面便会延迟更新,这对使用体验来说是致命的.</p>
-<p>现在让我们来想一下,JS 有什么操作是相当耗时的? 无论你的答案是什么,我都已经想好了,那就是<em>请求</em>.在<code>AJAX</code> 大行其道的年代,大家都在用<code>XMLHTTPRequest(XHR)</code> 请求来请求去. 如果使用者网速特别慢,可能一次请求要花费好几秒,但为什么使用者的网页仍能正常渲染(render), 而没有丝毫延迟?</p>
+<p>现在让我们来想一下,JS 有什么操作是相当耗时的? 无论你的答案是什么,我都已经想好了,那就是<em>请求</em>.在<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX">AJAX</a>[^2] 大行其道的年代,大家都在用<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest">XMLHTTPRequest(XHR)</a>[^3] 请求来请求去. 如果使用者网速特别慢,可能一次请求要花费好几秒,但为什么使用者的网页仍能正常渲染(render), 而没有丝毫延迟?</p>
+<p>因为 XHR 并非由 JS 本身, 而是由它的运行环境(即浏览器)自身的执行来处理的,因此不会阻塞调用栈. 有浏览器负责处理的函数还有计时器<code>setTimeout</code>, 与动画紧密相关的<code>requestAnimationFrame</code>, 害我一脚踏入事件循环泥沼的<code>requestIdleCallback</code>… 它们统称为<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API">Web APIs</a>[^4].</p>
+<p>以计时器来举例,当 JS 引擎执行到<code>setTimeout(func, 3000)</code>, 浏览器便接过计时器的操作,等 3 秒一到,便将它的<code>func</code>回调压入上下文执行栈,让引擎执行. 这可以说事一种非同步(<em>asynchronous</em>)的机制.</p>
+<p>一个复杂的网页,可能会有许多回调要执行,现在让我们来问: 是谁不停取出回调,并将回调压入上下文执行栈的?</p>
+<p>那就是今天的主角: 事件循环.</p>
+<h2 id="事件循环的基本概念"><a href="#事件循环的基本概念" class="headerlink" title="事件循环的基本概念"></a>事件循环的基本概念</h2><p>同样,在进入到事件循环的流程前,先来看一张图:</p>
+<p><img   class="lazyload" data-original="/images/000002.png" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" ><br>事件循环的运行流程. 图片来源已不可考.</p>
+<p>接下来,完美会跟着这份<a target="_blank" rel="noopener" href="https://whatwg.org/">WHATWG(Web Hypertext Application Technology Working Group)</a>[^5]社群(a.k.a. 浏览器大佬)编写的<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loops">HTML 规范文件</a> [^6], 来理解事件循环详细的运行流程.</p>
+<p>为什么需要事件循环? 开宗明义,规范便说了:</p>
+<blockquote>
+<p>为了协调事件,用户交互,脚本,渲染和网络活动等, 用户代理 <a target="_blank" rel="noopener" href="https://tc39.es/ecma262/#sec-agents">user agents</a>[^7]必须使用本节所描述的事件循环. 每个代理都有一个相关联且唯一的事件循环.</p>
+</blockquote>
+<p>接下来,规范根据不同代理对事件循环做了三种分类: <em>window event loop</em>、<em>worker event loop</em>、<em>worklet event loop</em>.</p>
+<p>第一个代理是我们最常碰到的<em>window</em>（浏览器环境，译者注）；第二个代理告诉我们<a href="*https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">service worker</a>[^8] 会有自己的事件循环；第三个代理我不知道是什么，<a href="*https://developer.mozilla.org/en-US/docs/Web/API/Worklet*">worklet</a>[^9]似乎是一个实验性 API。</p>
+<p>让我们往下滑：</p>
+<blockquote>
+<p>一个事件循环会有一个到多个任务队列（task queues）。</p>
+<p>每个人物任务（task）都来自特定的任务源（task source）。每个任务源都必须对应一个特定的任务队列。</p>
+</blockquote>
+<p>这两段话出现了三个专有名词：任务，任务源，任务队列。</p>
+<p>首先，<strong>任务就是宏任务</strong>，它可以干的事相当多，包括发布（dispatch）[Event 事件](: *<a target="_blank" rel="noopener" href="https://www.w3schools.com/jsref/obj_event.asp*)[^10]%EF%BC%8C%EF%BC%88%E6%83%B3%E6%83%B3%E5%BD%93%E4%BA%8B%E4%BB%B6%E7%9B%91%E5%90%AC%E5%99%A8%E8%A7%A6%E5%8F%91%E6%97%B6%EF%BC%8C%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0%E6%8B%BF%E5%88%B0%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%8F%82%E6%95%B0%EF%BC%89%E3%80%81%E8%A7%A3%E6%9E%90%EF%BC%88parse%EF%BC%89HTML%E3%80%81%E8%B0%83%E7%94%A8%E5%9B%9E%E8%B0%83%E3%80%81%E8%AF%B7%E6%B1%82[fetch](*https://fetch.spec.whatwg.org/#concept-fetch*)[^11]%E8%B5%84%E6%BA%90%E3%80%81%E5%93%8D%E5%BA%94%EF%BC%88reacting%EF%BC%89DOM">https://www.w3schools.com/jsref/obj_event.asp*)[^10]，（想想当事件监听器触发时，回调函数拿到的第一个参数）、解析（parse）HTML、调用回调、请求[fetch](*https://fetch.spec.whatwg.org/#concept-fetch*)[^11]资源、响应（reacting）DOM</a> 操作。</p>
+<p>任务源也很多，但大都被归类为<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#generic-task-sources*">以下四种</a>[^12]：</p>
+<blockquote>
+<ul>
+<li>DOM 操作： 比如以非阻塞的方式将元素插入 document。</li>
+<li>用户交互： 比如键盘输入或者鼠标滑动。</li>
+<li>网络活动</li>
+<li>访问历史记录（history traversal）：比如调用<code>history.back()</code>API。</li>
+</ul>
+</blockquote>
+<p>那任务队列干嘛的呢？它是拿来分类任务源用的；换言之，不用的任务源可能会被塞进同一个任务队列。但为什么要对任务源进一步分类？这个例子说明的很清楚：</p>
+<blockquote>
+<p>例如，用户代理可以将任务队列分为给鼠标和键盘事件（即用户交互任务源）用的，和给其它任务源用的。籍此，用户代理可以在<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model*">事件循环的处理模型</a>[^13]的初始步骤中，给与用户交互任务源关联的任务队列四分之三的优先处理权，以让界面保持响应性，但又不会卡住其它任务队列。</p>
+</blockquote>
+<p>换言之，<strong>说到任务的处理顺序时，并没有谁先触发谁就先执行的道理</strong>，这一切都要看你的浏览器如何实现。</p>
+<p>最后再讲一件事：</p>
+<blockquote>
+<p>微任务队列（microtask queue）不是任务队列。</p>
+<p>微任务队列是一种通俗的讲法，指的是通过<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-microtask*">queue a microtask</a>[^14]算法创建的任务。</p>
+</blockquote>
+<p>微任务虽是一种任务（它们具有相同的<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#concept-task*">结构</a>[^15]），但它所形成的队列与任务队列不同，而这是因为它们所使用的算法不同。</p>
+<p>有了这些基本概念，接下来，让我们直接进入到事件循环的重头戏吧！</p>
+<h2 id="事件循环是怎么运作的？"><a href="#事件循环是怎么运作的？" class="headerlink" title="事件循环是怎么运作的？"></a>事件循环是怎么运作的？</h2><p>在<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model*">8.1.6.3 處理模型（Processing model</a>[^16]中，规范描述了事件循环的运作流程：</p>
+<blockquote>
+<p>只要事件循环存在，便必须一直运行以下步骤：</p>
+<ol>
+<li>挑出一个任务队列，要怎么挑<a href="*https://infra.spec.whatwg.org/#implementation-defined*">由用户代理决定</a>[^17]。如果没有任务队列，那就直接跳到微任务队列步骤。</li>
+<li>将<em>oldestTask</em>设为该任务队列中的第一个任务，并移除。</li>
+<li>将<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#currently-running-task*">当前正在进行的任务</a>[^18]设为<em>oldestTask</em>。</li>
+<li>将 <em>taskStartTime</em> 设为 <a href="*https://w3c.github.io/hr-time/#dfn-current-high-resolution-time*">current high resolution time</a>[^19]。</li>
+<li>执行<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#concept-task-steps*">oldestTaks’s steps</a>[^20]</li>
+<li>将当前正在运行的任务设为 null。</li>
+</ol>
+</blockquote>
+<p>前六步都满好理解的。</p>
+<p>1： 「由用户代理决定」符合我们前面所说的，用户代理可自行决定要给哪个任务队列较高的优先处理权。</p>
+<p>2： 由于是任务<strong>队列</strong>，当然是遵循先进先出（FIFO，First-In-First-Out）的原则。</p>
+<blockquote>
+<ol start="7">
+<li><p>微任务：<a href="ttps://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint*">执行微任务检查</a>[^21]。</p>
+<p>a. 将 <em>oldestMicrotask</em> 设为对微任务队列<a href="*https://infra.spec.whatwg.org/#queue-dequeue*">出队 dequeue</a>[^26]的结果。</p>
+<p>b. 将当前正在运行的任务设为 <em>oldestMicrotask</em> 。</p>
+<p>c. 运行 <em>oldestMicrotask</em> 。</p>
+<p>d. 将当前正在运行的任务设为 null 。</p>
+<p>e. 如果 <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#event-loop*">event loop</a>[^22]’s <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint*">performing a microtask checkpoint</a>[^23] 为 true, 返回。</p>
+<p>f. 设置 <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#event-loop*">event loop</a>[^24]’s <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint*">performing a microtask checkpoint</a>[^25] 为 true 。</p>
+<p>g. 只要微任务队列不为空：</p>
+<p>h. For Each <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object*">environment settings object</a>[^27] whose <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#responsible-event-loop*">responsible event loop</a>[^28] is this <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#event-loop*">event loop</a>[^29] ,</p>
+<p>​    <a href="">notify about rejected promises</a>[^30] on that <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object*">environment settings object</a>[^31] .</p>
+<p>i. <a href="*https://w3c.github.io/IndexedDB/#cleanup-indexed-database-transactions*">Cleanup Indexed Database transactions</a>[^32]</p>
+<p>j. 执行 <a href="*https://tc39.es/ecma262/#sec-clear-kept-objects*">ClearKeptObjects</a>[^33]</p>
+<p>k. 设置<a href="*https://html.spec.whatwg.org/multipage/webappapis.html#event-loop*">event loop</a>[^34]’s <a href="*https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint*">performing a microtask checkpoint</a>[^35] 为 false 。</p>
+</li>
+</ol>
+</blockquote>
+<p>7：开始处理微任务。 首先检查 performing a microtask checkpoint 这个标志 (flag)。为什么需要？<strong>因为微任务检查并不是只有在事件循环的这个时机才触发</strong>，其它触发时机比如调用回调后；而为了避免在处理微任务队列时重复执行微任务检查（这可能在 7.3.3发生），因此需要一个标识来控制（后面会再详细说明微任务的执行策略）。</p>
+<p>7.3：检查微任务队列是否为空，若不为空，便执行第一个微任务。重复这个过程，直到所有微任务都执行完毕。</p>
+<blockquote>
+<ol start="8">
+<li>将 hasARenderingOpportunity 设为 false。</li>
+<li>将 now 设为  <a href="*https://w3c.github.io/hr-time/#dfn-current-high-resolution-time*">current high resolution time</a>[^37].[<a href="*https://html.spec.whatwg.org/multipage/references.html#refsHRT*">HRT</a>[^38]]</li>
+<li></li>
+</ol>
+</blockquote>
+<p>[^1]: generator: <em><a target="_blank" rel="noopener" href="https://javascript.info/generators">https://javascript.info/generators</a></em><br>[^2]: AJAX: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX">https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX</a></em><br>[^3]: <code>XMLHttpRequest</code>（XHR）: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest">https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest</a></em><br>[^4]: Web APIs: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API">https://developer.mozilla.org/en-US/docs/Web/API</a></em><br>[^5]: <a target="_blank" rel="noopener" href="https://whatwg.org/">https://whatwg.org/</a><br>[^6]: <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loops">https://html.spec.whatwg.org/multipage/webappapis.html#event-loops</a><br>[^7]: <a target="_blank" rel="noopener" href="https://tc39.es/ecma262/#sec-agents">https://tc39.es/ecma262/#sec-agents</a><br>[^8]:  service worker: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API</a></em><br>[^9]:    worklet: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Worklet">https://developer.mozilla.org/en-US/docs/Web/API/Worklet</a></em><br>[^10]: Event 事件：: <em><a target="_blank" rel="noopener" href="https://www.w3schools.com/jsref/obj_event.asp">https://www.w3schools.com/jsref/obj_event.asp</a></em><br>[^11]: fetch: <em><a target="_blank" rel="noopener" href="https://fetch.spec.whatwg.org/#concept-fetch">https://fetch.spec.whatwg.org/#concept-fetch</a></em><br>[^12]: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#generic-task-sources">https://html.spec.whatwg.org/multipage/webappapis.html#generic-task-sources</a></em><br>[^13]: 事件循环的处理模型： <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model">https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model</a></em><br>[^14]:  <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-microtask">https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-microtask</a></em><br>[^15]: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-task">https://html.spec.whatwg.org/multipage/webappapis.html#concept-task</a></em><br>[^16]:  8.1.6.3 处理模型（Processing model）: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model">https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model</a></em><br>[^17]: <em><a target="_blank" rel="noopener" href="https://infra.spec.whatwg.org/#implementation-defined">https://infra.spec.whatwg.org/#implementation-defined</a></em><br>[^18]: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#currently-running-task">https://html.spec.whatwg.org/multipage/webappapis.html#currently-running-task</a></em><br>[^19]: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/hr-time/#dfn-current-high-resolution-time">https://w3c.github.io/hr-time/#dfn-current-high-resolution-time</a></em><br>[^20]: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-task-steps">https://html.spec.whatwg.org/multipage/webappapis.html#concept-task-steps</a></em><br>[^21]: 执行微任务检查（Perform a microtask checkpoint）: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint</a></em><br>[^22]: event loop: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop">https://html.spec.whatwg.org/multipage/webappapis.html#event-loop</a></em><br>[^23: ]: performing a microtask checkpoint: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint</a></em><br>[^24]: event loop: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop">https://html.spec.whatwg.org/multipage/webappapis.html#event-loop</a></em><br>[^25]: performing a microtask checkpoint: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint</a></em><br>[^26]: 出列（dequeue）: <em><a target="_blank" rel="noopener" href="https://infra.spec.whatwg.org/#queue-dequeue">https://infra.spec.whatwg.org/#queue-dequeue</a></em><br>[^27]: environment settings object: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object">https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object</a></em><br>[^28]: responsible event loop: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#responsible-event-loop">https://html.spec.whatwg.org/multipage/webappapis.html#responsible-event-loop</a></em><br>[^29]: event loop: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop">https://html.spec.whatwg.org/multipage/webappapis.html#event-loop</a></em><br>[^30]: notify about rejected promises: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#notify-about-rejected-promises">https://html.spec.whatwg.org/multipage/webappapis.html#notify-about-rejected-promises</a></em><br>[^31]: environment settings object: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object">https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object</a></em><br>[^32]: Cleanup Indexed Database transactions: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/IndexedDB/#cleanup-indexed-database-transactions">https://w3c.github.io/IndexedDB/#cleanup-indexed-database-transactions</a></em><br>[^33]: ClearKeptObjects: <em><a target="_blank" rel="noopener" href="https://tc39.es/ecma262/#sec-clear-kept-objects">https://tc39.es/ecma262/#sec-clear-kept-objects</a></em><br>[^34]: event loop: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop">https://html.spec.whatwg.org/multipage/webappapis.html#event-loop</a></em><br>[^35]: performing a microtask checkpoint: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#performing-a-microtask-checkpoint</a></em><br>[^36]:<em>#%E5%BE%AE%E4%BB%BB%E5%8B%99%E7%9A%84%E5%9F%B7%E8%A1%8C%E7%AD%96%E7%95%A5</em><br>[^37]: current high resolution time: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/hr-time/#dfn-current-high-resolution-time">https://w3c.github.io/hr-time/#dfn-current-high-resolution-time</a></em><br>[^38]: HRT: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/references.html#refsHRT">https://html.spec.whatwg.org/multipage/references.html#refsHRT</a></em><br>[^39]: task: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-task">https://html.spec.whatwg.org/multipage/webappapis.html#concept-task</a></em><br>[^40]: set: <em><a target="_blank" rel="noopener" href="https://infra.spec.whatwg.org/#ordered-set">https://infra.spec.whatwg.org/#ordered-set</a></em><br>[^41]: environment settings object: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object">https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object</a></em><br>[^42]: script evaluation environment settings object set: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#script-evaluation-environment-settings-object-set">https://html.spec.whatwg.org/multipage/webappapis.html#script-evaluation-environment-settings-object-set</a></em><br>[^43]: append: <em><a target="_blank" rel="noopener" href="https://infra.spec.whatwg.org/#set-append">https://infra.spec.whatwg.org/#set-append</a></em><br>[^44]: top-level browsing context: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#top-level-browsing-context">https://html.spec.whatwg.org/multipage/browsers.html#top-level-browsing-context</a></em><br>[^45]: Report long tasks: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/longtasks/#report-long-tasks">https://w3c.github.io/longtasks/#report-long-tasks</a></em></p>
+<p>[^46]: Chrome 开发者工具的 Performance 面板中: <em><a target="_blank" rel="noopener" href="https://web.dev/long-tasks-devtools/">https://web.dev/long-tasks-devtools/</a></em></p>
+<p>[^47]: relevant agent: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#relevant-agent">https://html.spec.whatwg.org/multipage/webappapis.html#relevant-agent</a></em><br>[^48]: event loop: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-agent-event-loop">https://html.spec.whatwg.org/multipage/webappapis.html#concept-agent-event-loop</a></em><br>[^49]: browsing context: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc">https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc</a></em><br>[^50]: container document: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#bc-container-document">https://html.spec.whatwg.org/multipage/browsers.html#bc-container-document</a></em><br>[^51]: browsing contexts: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc">https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc</a></em><br>[^52]: child browsing contexts: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#child-browsing-context">https://html.spec.whatwg.org/multipage/browsers.html#child-browsing-context</a></em><br>[^53]: container documents: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#bc-container-document">https://html.spec.whatwg.org/multipage/browsers.html#bc-container-document</a></em><br>[^54]: shadow-including tree order: <em><a target="_blank" rel="noopener" href="https://dom.spec.whatwg.org/#concept-shadow-including-tree-order">https://dom.spec.whatwg.org/#concept-shadow-including-tree-order</a></em><br>[^55]: browsing context containers: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-container">https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-container</a></em><br>[^56]: node tree: <em><a target="_blank" rel="noopener" href="https://dom.spec.whatwg.org/#concept-node-tree">https://dom.spec.whatwg.org/#concept-node-tree</a></em><br>[^57]: 浏览上下文（browsing context）: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc">https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc</a></em><br>[^58]: 充分活跃（fully active）: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#fully-active">https://html.spec.whatwg.org/multipage/browsers.html#fully-active</a></em><br>[^59]: flush autofocus candidates: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/interaction.html#flush-autofocus-candidates">https://html.spec.whatwg.org/multipage/interaction.html#flush-autofocus-candidates</a></em><br>[^60]: run the resize steps: <em><a target="_blank" rel="noopener" href="https://drafts.csswg.org/cssom-view/#run-the-resize-steps">https://drafts.csswg.org/cssom-view/#run-the-resize-steps</a></em><br>[^61]: run the scroll steps: <em><a target="_blank" rel="noopener" href="https://drafts.csswg.org/cssom-view/#run-the-scroll-steps">https://drafts.csswg.org/cssom-view/#run-the-scroll-steps</a></em><br>[^62]: evaluate media queries and report changes: <em><a target="_blank" rel="noopener" href="https://drafts.csswg.org/cssom-view/#evaluate-media-queries-and-report-changes">https://drafts.csswg.org/cssom-view/#evaluate-media-queries-and-report-changes</a></em><br>[^63]: update animations and send events: <em><a target="_blank" rel="noopener" href="https://drafts.csswg.org/web-animations/#update-animations-and-send-events">https://drafts.csswg.org/web-animations/#update-animations-and-send-events</a></em><br>[^64]: run the fullscreen steps: <em><a target="_blank" rel="noopener" href="https://fullscreen.spec.whatwg.org/#run-the-fullscreen-steps">https://fullscreen.spec.whatwg.org/#run-the-fullscreen-steps</a></em><br>[^65]: run the animation frame callbacks: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#run-the-animation-frame-callbacks">https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#run-the-animation-frame-callbacks</a></em><br>[^66]: run the update intersection observations steps: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/IntersectionObserver/#run-the-update-intersection-observations-steps">https://w3c.github.io/IntersectionObserver/#run-the-update-intersection-observations-steps</a></em><br>[^67]: mark paint timing: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/paint-timing/#mark-paint-timing">https://w3c.github.io/paint-timing/#mark-paint-timing</a></em><br>[^68]: Intersection Observer: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API">https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API</a></em><br>[^69]: FCP（First Contentful Paint）: <em><a target="_blank" rel="noopener" href="https://web.dev/first-contentful-paint/">https://web.dev/first-contentful-paint/</a></em><br>[^70]: start an idle period algorithm: <em><a target="_blank" rel="noopener" href="https://w3c.github.io/requestidlecallback/#start-an-idle-period-algorithm">https://w3c.github.io/requestidlecallback/#start-an-idle-period-algorithm</a></em><br>[^71]: 计时器初始化步骤: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timer-initialisation-steps">https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timer-initialisation-steps</a></em><br>[^72]: WHATWG 规范文件: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint</a></em><br>[^73]: 这个链接: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint</a></em><br>[^74]: update animations and send events: <em><a target="_blank" rel="noopener" href="https://drafts.csswg.org/web-animations/#update-animations-and-send-events">https://drafts.csswg.org/web-animations/#update-animations-and-send-events</a></em><br>[^75]: clean up after running script 的最后: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#calling-scripts:perform-a-microtask-checkpoint">https://html.spec.whatwg.org/multipage/webappapis.html#calling-scripts:perform-a-microtask-checkpoint</a></em><br>[^76]: 调用回调的 Return 阶段的第 2 步: <em><a target="_blank" rel="noopener" href="https://heycam.github.io/webidl/#invoke-a-callback-function">https://heycam.github.io/webidl/#invoke-a-callback-function</a></em><br>[^77]: 这篇文章: <em><a target="_blank" rel="noopener" href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/</a></em><br>[^78]:  <code>Promise.then()</code> 便是一种 job: <em><a target="_blank" rel="noopener" href="https://262.ecma-international.org/11.0/#sec-promise-jobs">https://262.ecma-international.org/11.0/#sec-promise-jobs</a></em><br>[^79]: job 的执行时机: <em><a target="_blank" rel="noopener" href="https://262.ecma-international.org/11.0/#sec-jobs">https://262.ecma-international.org/11.0/#sec-jobs</a></em></p>
+<p>[^80]:  <code>MutationObserver</code>: <em><a target="_blank" rel="noopener" href="https://dom.spec.whatwg.org/#queue-a-mutation-observer-compound-microtask">https://dom.spec.whatwg.org/#queue-a-mutation-observer-compound-microtask</a></em></p>
+<p>[^81]: <code>queueMicrotask</code>: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-queuemicrotask">https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-queuemicrotask</a></em><br>[^82]: <code>postMessage</code>: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/web-messaging.html#window-post-message-steps">https://html.spec.whatwg.org/multipage/web-messaging.html#window-post-message-steps</a></em><br>[^83]: 但它其实是宏任务: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/web-messaging.html#window-post-message-steps">https://html.spec.whatwg.org/multipage/web-messaging.html#window-post-message-steps</a></em><br>[^84]: Chrome 开发者工具 Performance 面板的 Frames 面板: <em><a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#frames">https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#frames</a></em><br>[^85]: 跟着 Event loop 规范理解浏览器中的异步机制: <em><a target="_blank" rel="noopener" href="https://github.com/fi3ework/blog/issues/29">https://github.com/fi3ework/blog/issues/29</a></em><br>[^86]: 从 event loop 规范探究 javaScript 异步及浏览器更新渲染时机: <em><a target="_blank" rel="noopener" href="https://github.com/aooy/blog/issues/5">https://github.com/aooy/blog/issues/5</a></em><br>[^87]: 深入探究 eventloop 与浏览器渲染的时序问题: <em><a target="_blank" rel="noopener" href="https://www.404forest.com/2017/07/18/how-javascript-actually-works-eventloop-and-uirendering/">https://www.404forest.com/2017/07/18/how-javascript-actually-works-eventloop-and-uirendering/</a></em><br>[^88]: Tasks, microtasks, queues and schedules: <em><a target="_blank" rel="noopener" href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/</a></em><br>[^89]: Loupe: <em><a target="_blank" rel="noopener" href="http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4=">http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D</a></em></p>
+<p>[^90: ]WHATWG HTML Living Standard: Event loops: <em><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loops">https://html.spec.whatwg.org/multipage/webappapis.html#event-loops</a></em></p>
+<p>[^91]: W3C HTML5: Event loops: <em><a target="_blank" rel="noopener" href="https://dev.w3.org/html5/spec-LC/webappapis.html#event-loops">https://dev.w3.org/html5/spec-LC/webappapis.html#event-loops</a></em></p>
 
       </section>
       <section class="extra">
         
-          <ul class="copyright">
-  
-    <li><strong>本文作者：</strong>MocYang</li>
-    <li><strong>本文链接：</strong><a href="https://mocyang.github.io/2021/06/13/%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84%20Event%20Loop%20%E8%AE%B2%E8%A7%A3,%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A!/index.html" title="https:&#x2F;&#x2F;mocyang.github.io&#x2F;2021&#x2F;06&#x2F;13&#x2F;%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84%20Event%20Loop%20%E8%AE%B2%E8%A7%A3,%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A!&#x2F;index.html">https:&#x2F;&#x2F;mocyang.github.io&#x2F;2021&#x2F;06&#x2F;13&#x2F;%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84%20Event%20Loop%20%E8%AE%B2%E8%A7%A3,%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A!&#x2F;index.html</a></li>
-    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
-  
-</ul>
-        
-        
-          <section class="donate">
-  <div id="qrcode-donate">
-    <img   class="lazyload" data-original="https://pic.izhaoo.com/alipay.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg==" >
-  </div>
-  <div class="icon">
-    <a href="javascript:;" id="alipay"><i class="iconfont iconalipay"></i></a>
-    <a href="javascript:;" id="wechat"><i class="iconfont iconwechat-fill"></i></a>
-  </div>
-</section>
         
         
         
   <nav class="nav">
-    <a></a>
+    <a href="/2021/06/13/British-and-American-Festivities/"><i class="iconfont iconleft"></i>British-and-American-Festivities</a>
     <a href="/2021/06/10/The-True-Story-of-Pocahontas/">The-True-Story-of-Pocahontas<i class="iconfont iconright"></i></a>
   </nav>
 
@@ -261,7 +329,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84-Event-Loop-%E8%AE%B2%E8%A7%A3-%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A"><span class="toc-text">「译」硬核到极致的 Event Loop 讲解,不信你看完还不会!</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-%E6%89%A7%E8%A1%8C%E5%8D%B4%E4%B8%8D%E9%98%BB%E5%A1%9E%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">JS 执行却不阻塞的秘密</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84-Event-Loop-%E8%AE%B2%E8%A7%A3-%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A"><span class="toc-text">「译」硬核到极致的 Event Loop 讲解,不信你看完还不会!</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-%E6%89%A7%E8%A1%8C%E5%8D%B4%E4%B8%8D%E9%98%BB%E5%A1%9E%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">JS 执行却不阻塞的秘密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">事件循环的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E6%98%AF%E6%80%8E%E4%B9%88%E8%BF%90%E4%BD%9C%E7%9A%84%EF%BC%9F"><span class="toc-text">事件循环是怎么运作的？</span></a></li></ol></li></ol>
   </aside>
 
         
@@ -272,42 +340,7 @@
   
 
 <footer class="footer">
-  <div class="footer-social"><a 
-        href="tencent://message/?Menu=yes&uin=894519210 "
-        target="_blank"
-        class="footer-social-item"
-        onMouseOver="this.style.color= '#12B7F5'" 
-        onMouseOut="this.style.color='#33333D'">
-          <i class="iconfont  iconQQ "></i>
-      </a><a 
-        href="javascript:; "
-        target="_blank"
-        class="footer-social-item"
-        onMouseOver="this.style.color= '#09BB07'" 
-        onMouseOut="this.style.color='#33333D'">
-          <i class="iconfont  iconwechat-fill "></i>
-      </a><a 
-        href="https://www.instagram.com/izhaoo/ "
-        target="_blank"
-        class="footer-social-item"
-        onMouseOver="this.style.color= '#DA2E76'" 
-        onMouseOut="this.style.color='#33333D'">
-          <i class="iconfont  iconinstagram "></i>
-      </a><a 
-        href="https://github.com/zhaoo "
-        target="_blank"
-        class="footer-social-item"
-        onMouseOver="this.style.color= '#9f7be1'" 
-        onMouseOut="this.style.color='#33333D'">
-          <i class="iconfont  icongithub-fill "></i>
-      </a><a 
-        href="mailto:izhaoo@163.com "
-        target="_blank"
-        class="footer-social-item"
-        onMouseOver="this.style.color=#FF3B00" 
-        onMouseOut="this.style.color='#33333D'">
-          <i class="iconfont  iconmail"></i>
-      </a></div>
+  <div class="footer-social"></div>
   
     <div class="footer-copyright"><p>Powered by <a target="_blank" href="https://hexo.io">Hexo</a>  |  Theme - <a target="_blank" href="https://github.com/izhaoo/hexo-theme-zhaoo">zhaoo</a></p></div>
   
@@ -347,10 +380,6 @@
 
 
 
-
-
-  
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 
 
 
