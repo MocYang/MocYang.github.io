@@ -189,7 +189,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>六月 13, 2021</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>13642</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>13702</span>
     </div>
   </div>
 </section>
@@ -233,7 +233,7 @@
 <p>让我们往下滑：</p>
 <blockquote>
 <p>一个事件循环会有一个到多个任务队列（task queues）。</p>
-<p>每个人物任务（task）都来自特定的任务源（task source）。每个任务源都必须对应一个特定的任务队列。</p>
+<p>每个任务任务（task）都来自特定的任务源（task source）。每个任务源都必须对应一个特定的任务队列。</p>
 </blockquote>
 <p>这两段话出现了三个专有名词：任务，任务源，任务队列。</p>
 <p>首先，<strong>任务就是宏任务</strong>，它可以干的事相当多，包括发布（dispatch）<a target="_blank" rel="noopener" href="https://www.w3schools.com/jsref/obj_event.asp">Event 事件</a>[^10]，（想想当事件监听器触发时，回调函数拿到的第一个参数）、解析（parse）HTML、调用回调、请求<a target="_blank" rel="noopener" href="https://fetch.spec.whatwg.org/#concept-fetch">fetch</a>[^11]资源、响应（reacting）DOM 操作。</p>
@@ -258,7 +258,7 @@
 </blockquote>
 <p>微任务虽是一种任务（它们具有相同的<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-task">结构</a>[^15]），但它所形成的队列与任务队列不同，而这是因为它们所使用的算法不同。</p>
 <p>有了这些基本概念，接下来，让我们直接进入到事件循环的重头戏吧！</p>
-<h2 id="事件循环是怎么运作的？"><a href="#事件循环是怎么运作的？" class="headerlink" title="事件循环是怎么运作的？"></a>事件循环是怎么运作的？</h2><p>在<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model">8.1.6.3 處理模型（Processing model</a>[^16]中，规范描述了事件循环的运作流程：</p>
+<h2 id="事件循环是怎么运作的？"><a href="#事件循环是怎么运作的？" class="headerlink" title="事件循环是怎么运作的？"></a>事件循环是怎么运作的？</h2><p>在<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model">8.1.6.3 处理模型（Processing model</a>[^16]中，规范描述了事件循环的运作流程：</p>
 <blockquote>
 <p>只要事件循环存在，便必须一直运行以下步骤：</p>
 <ol>
@@ -300,7 +300,10 @@
 <li>to be continue…</li>
 </ol>
 </blockquote>
-<ul>
+<blockquote>
+<p>原文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Uc4VjVGN_9xlXjdJiWmVQQ">https://mp.weixin.qq.com/s/Uc4VjVGN_9xlXjdJiWmVQQ</a></p>
+</blockquote>
+<h3 id="相关连接："><a href="#相关连接：" class="headerlink" title="相关连接："></a>相关连接：</h3><ul>
 <li>[^1]: generator: <em><a target="_blank" rel="noopener" href="https://javascript.info/generators">https://javascript.info/generators</a></em></li>
 <li>[^2]: AJAX: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX">https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX</a></em></li>
 <li>[^3]: <code>XMLHttpRequest</code>（XHR）: <em><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest">https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest</a></em></li>
@@ -415,7 +418,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84-Event-Loop-%E8%AE%B2%E8%A7%A3-%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A"><span class="toc-text">「译」硬核到极致的 Event Loop 讲解,不信你看完还不会!</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-%E6%89%A7%E8%A1%8C%E5%8D%B4%E4%B8%8D%E9%98%BB%E5%A1%9E%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">JS 执行却不阻塞的秘密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">事件循环的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E6%98%AF%E6%80%8E%E4%B9%88%E8%BF%90%E4%BD%9C%E7%9A%84%EF%BC%9F"><span class="toc-text">事件循环是怎么运作的？</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84-Event-Loop-%E8%AE%B2%E8%A7%A3-%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A"><span class="toc-text">「译」硬核到极致的 Event Loop 讲解,不信你看完还不会!</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-%E6%89%A7%E8%A1%8C%E5%8D%B4%E4%B8%8D%E9%98%BB%E5%A1%9E%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">JS 执行却不阻塞的秘密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">事件循环的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E6%98%AF%E6%80%8E%E4%B9%88%E8%BF%90%E4%BD%9C%E7%9A%84%EF%BC%9F"><span class="toc-text">事件循环是怎么运作的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%BF%9E%E6%8E%A5%EF%BC%9A"><span class="toc-text">相关连接：</span></a></li></ol></li></ol></li></ol>
   </aside>
 
         
