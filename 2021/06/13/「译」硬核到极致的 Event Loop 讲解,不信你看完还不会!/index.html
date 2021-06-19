@@ -189,7 +189,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>六月 13, 2021</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>13702</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>22480</span>
     </div>
   </div>
 </section>
@@ -295,13 +295,242 @@
 <p>7.3：检查微任务队列是否为空，若不为空，便执行第一个微任务。重复这个过程，直到所有微任务都执行完毕。</p>
 <blockquote>
 <ol start="8">
-<li>将 hasARenderingOpportunity 设为 false。</li>
-<li>将 now 设为  <a target="_blank" rel="noopener" href="https://w3c.github.io/hr-time/#dfn-current-high-resolution-time">current high resolution time</a>[^37].[<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/references.html#refsHRT">HRT</a>[^38]]</li>
-<li>to be continue…</li>
+<li><p>将 hasARenderingOpportunity 设为 false。</p>
+</li>
+<li><p>将 now 设为  <a target="_blank" rel="noopener" href="https://w3c.github.io/hr-time/#dfn-current-high-resolution-time">current high resolution time</a>[^37].[<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/references.html#refsHRT">HRT</a>[^38]]</p>
+</li>
+<li><p>Report the <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-task">task</a>[^39]’s duration by performing the following steps:</p>
+</li>
+<li><ol>
+<li>Let top-level browsing contexts be an empty <a target="_blank" rel="noopener" href="https://infra.spec.whatwg.org/#ordered-set">set</a>[^40].</li>
+<li>For each <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object">environment settings object</a>[^41] settings of oldestTask’s <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#script-evaluation-environment-settings-object-set">script evaluation environment settings object set</a>[^42], <a target="_blank" rel="noopener" href="https://infra.spec.whatwg.org/#set-append">append</a>[^43]  setting’s <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#top-level-browsing-context">top-level browsing context</a>[^44] to top-level browsing contexts.</li>
+<li><a target="_blank" rel="noopener" href="https://w3c.github.io/longtasks/#report-long-tasks">Report long tasks</a>[^45], passing in taskStartTime, now (the end time of the task), top-level browsing contexts, and oldestTask.</li>
+</ol>
+</li>
 </ol>
 </blockquote>
+<p>8: 从字面上理解，<em>hasARenderingOpportunity</em>便是「是否有机会渲染」，一开始是 false，它将跟等下第 10 步的更新页面（Update The rendering）有关。</p>
+<p>9：这里的 now 将成为 <code>requestAnimationFrame</code> 回调的第一个参数。</p>
+<p>10：我看不太懂在干嘛，但 10.3 回调的 <em>long task</em> 似乎会出现在 <a target="_blank" rel="noopener" href="https://web.dev/long-tasks-devtools/">Chrome 开发者工具 Performance</a>[^46] 面板中。</p>
 <blockquote>
-<p>原文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Uc4VjVGN_9xlXjdJiWmVQQ">https://mp.weixin.qq.com/s/Uc4VjVGN_9xlXjdJiWmVQQ</a></p>
+<ol start="11">
+<li><p>更新页面：如果是 <em>window Event Loop</em>，则：</p>
+<ol>
+<li>任何 <strong>Document</strong> 对象 B，其<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc">browsing context</a>[^49] 的 包含<strong>Document</strong>(<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#bc-container-document">container document</a>[^50])对象为 A，则，B 必须在 A 后插入列表。</li>
+<li>If there are two documents A and B whose <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc">browsing contexts</a>[^51] are both <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#child-browsing-context">child browsing contexts</a>[^52] whose <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#bc-container-document">container documents</a>[^53] are another <code>Document</code> C, then the order of A and B in the list must match the <a target="_blank" rel="noopener" href="https://dom.spec.whatwg.org/#concept-shadow-including-tree-order">shadow-including tree order</a>[^54] of their respective <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-container">browsing context containers</a>[^55] in C’s <a target="_blank" rel="noopener" href="https://dom.spec.whatwg.org/#concept-node-tree">node tree</a>[^56].</li>
+</ol>
+</li>
+<li><ol start="3">
+<li><p>Let docs be all <code>Document</code> objects whose <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#relevant-agent">relevant agent</a>[^47]’s <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-agent-event-loop">event loop</a>[^48] is this event loop, sorted arbitrarily except that the following conditions must be met:</p>
+<p>In the steps below that iterate over docs, each <code>Document</code> must be processed in the order it is found in the list.</p>
+</li>
+<li><p>渲染機會（Rendering opportunities）：移除<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#concept-document-bc">浏览器上下文(browsing context)</a>[^57]沒有渲染机会的 docs。</p>
+</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<p>11： 这一步做的事情相当多（上面一小部分），主要是处理和页面渲染相关的事。</p>
+<p>11.1：我没有全部看懂，但大致就是选出<strong>Document</strong>，将它们指定给<em>docs</em>，并以一定的规则排序。</p>
+<p>11.2：你可能会疑惑，要怎么决定有没有渲染机会？</p>
+<blockquote>
+<p>如果用户代理当前能够将浏览器上下文的内容呈现给与用户，那该浏览器上下文就有渲染机会，这需要考虑硬件刷新频率的限制，和用户代理处于性能考量的节流，也需要考虑内容的可呈现性（presentable），即使它在视口（viewport）外。</p>
+</blockquote>
+<p>规范似乎觉得这里没说清楚，于是又补上一句：</p>
+<blockquote>
+<p>浏览器上下文的渲染机会是基于硬件限制（如显示器刷新率（display refresh rates））和其他因素（如页面性能或页面是否在背景（background）来确定的）。渲染机会通常会定期出现。</p>
+</blockquote>
+<p>好像还是没说清楚，再给一个注解：</p>
+<blockquote>
+<p>本规范并没有规定任何特定的模式来选择渲染机会。但距离说，若浏览器试图实现 60 Hz 的刷新率，那渲染机会最多每 1/60 秒要出现一次（约 16.7ms）。若浏览器发现某个浏览器上下文无法维持这个速率，它可能会将渲染机会降到可持续的每秒 30 次，而不是偶尔掉帧。同样，如果一个浏览器上下文不可见，用户代理可能会决定将该页面降到每秒 4 次渲染机会，甚至更少。</p>
+</blockquote>
+<p>说了这么多，我们大致上可以这么总结：不是每轮事件循环都会更新页面，其频率高低，看浏览器怎么实现。</p>
+<blockquote>
+<ol start="11">
+<li>更新页面：<ol>
+<li>用户代理认为更新 <strong>document</strong> 的浏览器上下文的页面不会有明显的（visible）效果。</li>
+<li><strong>document</strong> 的 map of animation frame callbacks 为空。</li>
+<li>如果 <em>docs</em> 不为空，则将<strong>hasARenderingOpportunity</strong> 设为 true。</li>
+<li>不必要的渲染（Unnecessary rendering）：移除满足以下条件的 <em>docs</em>：<ol>
+<li>移除用户代理由于其他原因认为最好（preferrable）跳过更新页面的 <em>docs</em>。</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<p>11.3：<em>hasARenderingOpportunity</em> 在第 8 步出现过。</p>
+<p>11.4-5： 与 11.2 做的事类似，再次数筛选掉不需要渲染的<em>docs</em>。</p>
+<p>11.4： 把筛选条件说的很清楚，值得注意的是，animation frame callback 就是放在  <code>requestAnimationFrame</code> 的回调。</p>
+<p>11.5： 等于没说，其目的应该是授予浏览器决定是否要渲染的权利。不过规范还是举例了：</p>
+<blockquote>
+<p> 比如为了确保某些任务紧接着执行，只有把微任务检查交错其中（而且没有 animation frame callback参与）。具体来说，用户代理可能希望<strong>合并定时器回调</strong>，中间没有页面更新。</p>
+</blockquote>
+<p>同时，规范也说明了设立 11.2 和 11.4 的目的：</p>
+<blockquote>
+<p>被标注为「渲染机会」的步骤可防止用户代理在 <strong>无法向用户呈现新内容时</strong> 更新页面。</p>
+<p>被标注为『不必要的渲染』的步骤可防止用户代理在 <strong>没有新内容可绘制时</strong> 更新页面。</p>
+</blockquote>
+<p>到这里，如果 <em>docs</em>还有<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/browsers.html#fully-active">充分活跃(fully active)</a>[^58]的<strong>document</strong> 那就一一对它们执行：</p>
+<blockquote>
+<ol start="11">
+<li>更新页面：<ol start="6">
+<li><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/interaction.html#flush-autofocus-candidates">flush autofocus candidates</a>[^59]</li>
+<li><a target="_blank" rel="noopener" href="https://drafts.csswg.org/cssom-view/#run-the-resize-steps">run the resize steps</a>[^60]</li>
+<li><a target="_blank" rel="noopener" href="https://drafts.csswg.org/cssom-view/#run-the-scroll-steps">run the scroll steps</a>[^61]</li>
+<li><a target="_blank" rel="noopener" href="https://drafts.csswg.org/cssom-view/#evaluate-media-queries-and-report-changes">evaluate media queries and report changes</a>[^62]</li>
+<li><a target="_blank" rel="noopener" href="https://drafts.csswg.org/web-animations/#update-animations-and-send-events">update animations and send events</a>[^63]</li>
+<li><a target="_blank" rel="noopener" href="https://fullscreen.spec.whatwg.org/#run-the-fullscreen-steps">run the fullscreen steps</a>[^64]</li>
+<li><a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#run-the-animation-frame-callbacks">run the animation frame callbacks</a>[^65]</li>
+<li><a target="_blank" rel="noopener" href="https://w3c.github.io/IntersectionObserver/#run-the-update-intersection-observations-steps">run the update intersection observations steps</a>[^66]</li>
+<li>Invoke the <a target="_blank" rel="noopener" href="https://w3c.github.io/paint-timing/#mark-paint-timing">mark paint timing</a>[^67] algorithm</li>
+<li>更新该 <em>Document</em>的页面，及其浏览器上下文以反映当前状态</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<p>11.6-13：你可以看到很多熟悉的名字，比如事件类型 <strong>resize</strong> 和 <strong>scroll</strong>、与 RWD（Responsive Web Design）息息相关的<strong>media query</strong>、常被用来做懒加载的 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API">IntersectionObserver</a>[^68]</p>
+<p>11.12  执行 <strong>requestAnimationFrame</strong> 的回调。</p>
+<p>11.14： 不知道在干嘛，但似乎跟网页性能指标 <a target="_blank" rel="noopener" href="https://web.dev/first-contentful-paint/">FCP (First Contentful Paint)</a>[^69]。</p>
+<p>到这里，事件循环的更新页面结束，接下来：</p>
+<blockquote>
+<ol start="12">
+<li><p>如果满足如下条件：</p>
+<ol>
+<li><p>运行 <a target="_blank" rel="noopener" href="https://w3c.github.io/requestidlecallback/#start-an-idle-period-algorithm">start an idle period algorithm</a>[^70]</p>
+<p>a.  事件循环还是 window Event Loop；</p>
+<p>b. 在任务队列中没有任何任务；</p>
+<p>c. 微任务队列为空；</p>
+<p>d. hasARenderingOpportunity 为 false；</p>
+</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<p>12：若条件都满足， <strong>requestIdleCallback</strong> 的回调将在这步执行。</p>
+<p>第 13 不是在讲还是 worker Event Loop 的情况，与本文主体无关，跳过。</p>
+<p>一轮事件循环到此运行完毕。现在再回去看看本节开头的流程图，是不是很清楚了呢？</p>
+<p>还不清楚？没关系，让我们结合调用栈、web APIs 和事件循环，来实际跑一遍流程吧！</p>
+<h2 id="从规范了解事件循环"><a href="#从规范了解事件循环" class="headerlink" title="从规范了解事件循环"></a>从规范了解事件循环</h2><p>先来看一个简单的例子</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> <span class="title">onTimeout</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;timeout&#x27;</span>)</span><br><span class="line">&#125;, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span> <span class="title">onFulfill1</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;promise1&#x27;</span>)</span><br><span class="line">&#125;).then(<span class="function"><span class="keyword">function</span> <span class="title">onFulfill2</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;promise2&#x27;</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;main&#x27;</span>)</span><br><span class="line"></span><br><span class="line">logSomething()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">logSomething</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;something&#x27;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当程序执行时，会发生什么？</p>
+<ol>
+<li>建立全局执行上下文（global execution context），压入调用栈。</li>
+<li>遇到 <strong>setTimeout</strong>， 由 Web API 接管计时器的处理，时间一到，便把 <strong>onTimeout</strong> 排入任务队列。</li>
+<li>遇到 <strong>Promise.then</strong>， 将 <strong>onFulfill</strong> 排入微任务队列。</li>
+<li>在控制台打印 <strong>main</strong>。</li>
+<li>调用 <strong>logSomething</strong>，将其函数执行上下文压入调用栈。</li>
+<li>答应出 <strong>something</strong>。</li>
+<li><strong>logSomething</strong> 执行完毕，弹出。</li>
+<li>程序执行完毕，全局执行上下文弹出。</li>
+<li>执行微任务检查：微任务队列不为空，出列。</li>
+<li>调用 <strong>onFulfill</strong>， 将其函数执行上下文压入调用栈。</li>
+<li>打印 <strong>promise1</strong>。</li>
+<li><strong>onFulfill</strong> 执行完毕，弹出。</li>
+<li>遇到 <strong>Promise。then</strong>， 将<strong>onFulfill</strong> 排入微任务队列。</li>
+<li>微任务队列不为空，出列。</li>
+<li>调用 <strong>onFulfill</strong>， 将其函数执行上下文压入调用栈。</li>
+<li>打印 <strong>promise2</strong>。</li>
+<li><strong>onFulFill</strong> 执行完毕，弹出。</li>
+<li>微任务队列为空，微任务队列检查完毕。</li>
+<li>调用栈为空，事件循环从任务队列最旧的任务。</li>
+<li>调用<strong>onTimeout</strong>，将其函数执行上下文压入调用栈。</li>
+<li>打印 <strong>timeout</strong>。</li>
+<li><strong>onTimeout</strong> 执行完毕，弹出。</li>
+</ol>
+<p>你可能会比较疑惑：为什么微任务是在程序执行完毕后便执行？微任务检查不是应该在调用一个任务后（在此例即是 <strong>onTimeout</strong>）才出发吗？</p>
+<p>别忘记我提醒过你的：微任务检查的触发时机相当多。下一节（微任务的执行策略）我会详述微任务执行策略。</p>
+<p>再来看一个比较复杂的例子：</p>
+<p>HTML:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">&quot;btn&quot;</span> <span class="attr">type</span>=<span class="string">&quot;button&quot;</span>&gt;</span>Click me!<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>Js:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> btn = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;btn&#x27;</span>)</span><br><span class="line"></span><br><span class="line">btn.addEventListener(<span class="string">&#x27;click&#x27;</span>, <span class="function"><span class="keyword">function</span> <span class="title">onClick</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span> <span class="title">onTimeout</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;timeout&#x27;</span>)</span><br><span class="line">    </span><br><span class="line">    requestIdleCallback(<span class="function"><span class="keyword">function</span> <span class="title">onIdle2</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">&#x27;idle2&#x27;</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;, <span class="number">0</span>)</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span> <span class="title">onFulfill1</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;promise1&#x27;</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">  </span><br><span class="line">  requestAnimationFrame(<span class="function"><span class="keyword">function</span> <span class="title">onRaf</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;raf&#x27;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">Promise</span>.resolve().then(<span class="function"><span class="keyword">function</span> <span class="title">onFulfill2</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">&#x27;promise2&#x27;</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">  </span><br><span class="line">  requestIdleCallback(<span class="function"><span class="keyword">function</span> <span class="title">onIdle1</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;idle1&#x27;</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>当你点击按钮，控制台会打印出什么？</p>
+<p>答案不止一种，在不同浏览器或同一浏览器的不同时间，可能会出现不同的结果。若只看最常出现的结果，</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">promise1</span><br><span class="line">raf</span><br><span class="line">promise2</span><br><span class="line">timeout</span><br><span class="line">idle1</span><br><span class="line">idle2</span><br></pre></td></tr></table></figure>
+
+<p>无论哪种结果，都能被事件循环的处理模型解释。换言之，差异并不来自规范失效，而来自规范赋予浏览器的弹性。</p>
+<p>让我们一步步来：</p>
+<ol>
+<li><code>click</code> 事件已有 Web API 接收处理，将其回调加入任务队列。</li>
+<li>调用 <code>onClick</code> ，将其函数执行上下文压入执行栈。</li>
+<li>遇到 <code>setTimeout</code>，有 Web API 接管计时器的处理，时间一到便把 <code>onTimeout</code>, 加入任务队列。</li>
+<li>遇到 <code>Promise.then()</code>, 将 <code>onFulfiil</code> 加入微任务队列。</li>
+<li>遇到 <code>requestAnimationFrame</code> ，将其回调 <code>onRaf</code> 放入 <strong>map of animation frame callbacks</strong>。</li>
+<li>遇到 <code>requestIdleCallback</code>, 将其回调 <code>OnIdle1</code> 放入 <strong>list of idle request callbacks</strong>。</li>
+<li><code>onClick</code> 执行完毕，弹出。</li>
+<li>执行微任务检查：微任务队列不为空，出列。</li>
+<li>调用 <code>onFulfill</code>, 将其函数执行上下文压入执行栈。</li>
+<li>打印出 <code>promise1</code>.</li>
+<li><code>onFulfill</code> 执行完毕，弹出。</li>
+</ol>
+<p>接下来，分歧产生了：究竟是会先执行计时器的回调 <code>onTimeout</code>, 还是 <code>requestAnimationFrame</code>的回调 <code>onRaf</code> ？</p>
+<p>而此时 <code>onTimeout</code>有没有被加入任务队列？你可能会说, <code>setTimeout</code>的等待时间是 <code>0</code>, 其回调应该就要被马上加入任务队列吧？</p>
+<p>不一定的，因为规范在<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timer-initialisation-steps">计时器初始化步骤</a>[^71]中其实有授予浏览器延长时间的权利：</p>
+<blockquote>
+<ol start="17">
+<li>可选择再等待一个由用户代理决定的时间长度。</li>
+</ol>
+</blockquote>
+<p>目的是：</p>
+<blockquote>
+<p>为了优化(optimize) 设备的用电情况（power usage）.例如，一些处理器具有低电量模式，其中定时器的粒度（granularity）会降低。在这种平台上，用户代理可减慢定时器，而非要求处理器使用更精确的模式、消耗更高的电量。</p>
+</blockquote>
+<p>所以，Chrome 的情况是：</p>
+<ol>
+<li>调用栈为空，由于无合格的任务队列，且微任务队列为空，事件循环进到更新页面步骤。</li>
+<li>运行 <code>animation frame callbacks</code>。</li>
+<li>调用 <code>onRaf</code>,将其函数执行上下文压入调用栈。</li>
+<li>打印 <code>raf</code>.</li>
+<li>遇到 <code>Promise.then()</code>,将 <code>onFulfill2</code> 加入微任务对列。</li>
+<li><code>onRaf</code>执行完毕，弹出。</li>
+<li>执行微任务队列检查：微任务队列不为空，出列。</li>
+<li>调用 <code>onFulfill2</code>，将其函数执行上下文压入调用栈。</li>
+<li>打印 <code>promise2</code>。</li>
+<li><code>onFulfill2</code>执行完毕，弹出。</li>
+<li>由于 <strong>hasARenderingOpportunity</strong> 为 true，或任务队列中有任务，跳过 <em>start an idle period algorithm</em>。</li>
+<li>调用栈为空，事件循环从任务队列中取出最久的任务。</li>
+<li>调用 <code>onTimeout</code>, 将其函数执行上下文压入调用栈。</li>
+<li>打印 <code>timeout</code>。</li>
+<li>遇到 <code>requestIdleCallback</code>,将其回调 <code>onIdle2</code> 放入 <em>list of idle request callbacks</em>。</li>
+<li><code>onTimeout</code>执行完毕，弹出。</li>
+<li><code>start an idle period algorithm</code>, 调用 <code>onIdle1</code>， 将其函数执行上下文压入调用栈。</li>
+<li>打印<code>idle1</code> 。</li>
+<li><code>onIdle1</code>执行完毕，弹出。</li>
+<li>调用 <code>onIdle2</code>，将其函数执行上下文压入调用栈。</li>
+<li>打印 <code>idle2</code>。</li>
+<li><code>onIdle2</code>执行完毕，弹出。</li>
+</ol>
+<h2 id="微任务的执行策略"><a href="#微任务的执行策略" class="headerlink" title="微任务的执行策略"></a>微任务的执行策略</h2><p>微任务的触发事件既简单又复杂。先讲复杂的：前面是说过，执行微任务前会先执行微任务检查，而微任务检查的触发时机可参考这张图：</p>
+<p><img    class="lazyload" data-original="https://mmbiz.qpic.cn/mmbiz_png/tibUxowsg9P3OMDfCXEibgkbqWbbib6OYCz9cvdu9l3hfibU7BXmfLuUTdzicsTXVCcUPibUcFJOF0a4ASvRDspNWyoQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="   ><span class="image-caption">Image</span></p>
+<p>规范中有引用到 <em>perform a microtack checkpoint</em>关键字的段落。图摘自 <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint">WHATWG 规范文件</a>[^72]</p>
+<p>点击<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#perform-a-microtask-checkpoint">这个链接</a>[^73]，再点击 <strong>perform a microtack checkpoint</strong>粗体字，你也可以看到引用这个关键字的其他段落（当然不止这些，比如还有<a target="_blank" rel="noopener" href="https://drafts.csswg.org/web-animations/#update-animations-and-send-events">update animation and send events</a>[^74]）。</p>
+<p>比较常见的触发点是 <em>8.1.4.4</em>的 Calling scripts，它在 <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/webappapis.html#calling-scripts:perform-a-microtask-checkpoint">clean up after running script的最后</a>[^75]，当调用栈为空，会执行微任务检查。</p>
+<p>我没有很了解 <em>script</em> 在规范中的意义为何，只知道在很多地方都会执行 <em>clean up after running script</em>,最常见的便是 <a target="_blank" rel="noopener" href="https://heycam.github.io/webidl/#invoke-a-callback-function">调用回调的 return 阶段的第 2 步</a>[^76],而这就是为什么在上一节第二个例子中的 <code>onRaf</code>会在执行完毕后，马上执行微任务检查。</p>
+<p>「太琐碎了吧！我怎么可能记得住？」在你喊出这句话之前，我要来讲一个简单的判断方法：<strong>只要当前调用栈为空，微任务检查便会立即执行</strong>；简而言之，微任务的执行策略是：见缝插针，尽可能早。</p>
+<p>这个判断方法并没有在规范中明确表述（至少我没有找到），但它应能适用 99.9%的情景，剩下 0.1%还有待你分享给我。</p>
+<p>只讲一个证据：现代浏览器已把 <code>Promise.then()</code>，看作是一种微任务（至少在 2015 年前不是如此，详情可见<a target="_blank" rel="noopener" href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/">这篇文章</a>[^77]）。</p>
+<p>而在 ECMAScript 规范里，有一个与微任务相似的概念，叫做 <strong>job</strong>，而 [Promise.then() 便是一种 job](<a target="_blank" rel="noopener" href="https://262.ecma-international.org/11.0/#sec-promise-jobs*[79]job">https://262.ecma-international.org/11.0/#sec-promise-jobs*[79]job</a> 的執行時機: <em><a target="_blank" rel="noopener" href="https://262.ecma-international.org/11.0/#sec-jobs)[^78]">https://262.ecma-international.org/11.0/#sec-jobs)[^78]</a> 。因此，微任务的执行策略理论上要跟</em>job*相容。对于 <a target="_blank" rel="noopener" href="https://262.ecma-international.org/11.0/#sec-jobs">job 的执行时机</a>[^79] 。你会发现它跟我前述的判断方法时一样的：</p>
+<blockquote>
+<p>在未来的某个时间点，当没有正在运行的执行上下文，且执行上下文堆栈为空时。</p>
+</blockquote>
+<p>（除了 <code>Promise</code>, <a target="_blank" rel="noopener" href="https://dom.spec.whatwg.org/#queue-a-mutation-observer-compound-microtask">MutationObserver</a>[^80],<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#dom-queuemicrotas">queueMicrotask</a>[^81]）。有很多文章把 <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/web-messaging.html#window-post-message-steps">postMessage</a>[^82]，也当做微任务，<a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/web-messaging.html#window-post-message-steps">但它其实是宏任务</a>[^83]</p>
+<p>来自 <strong>posted message</strong> 任务源</p>
+<h2 id="回答开头的问题："><a href="#回答开头的问题：" class="headerlink" title="回答开头的问题："></a>回答开头的问题：</h2><blockquote>
+<p><code>帧</code>是什么？</p>
+<p>帧是组成浏览器页面的基本元素：每个时刻的页面，都是由一个相同或不同的帧所组成的。想了解这句话的具体含义，可查看 <a target="_blank" rel="noopener" href="https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#frames">Chrome 开发者工具 Performance 面板的 Frames 截图</a>[^84  ]  。</p>
+<p>帧与页面更新相关，但并不等同于页面更新。帧包括事件循环、布局（layout）、绘制（paint）等等。一帧就代表一次页面更新，但并不代表只有一轮事件循环，因为浏览器能根据各种原因跳过页面更行。</p>
+<p>形象化的说，若浏览器是「人」，那帧就是『一天』这个时间单位——人的一生是由一天又一天组成的，就像浏览器页面是由一帧又一帧所组成的；人每天都会有固定的行程，且有一定顺序，比如睡觉，吃饭，上厕所，洗澡等等，就像浏览器每一帧都会有函数调用，事件循环，绘制等待；当然，人有时会因为太累而不洗澡直接睡觉，浏览器也能有限度的调整一帧内所发生的事情的顺序。</p>
+</blockquote>
+<blockquote>
+<p> 原文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Uc4VjVGN_9xlXjdJiWmVQQ">https://mp.weixin.qq.com/s/Uc4VjVGN_9xlXjdJiWmVQQ</a></p>
 </blockquote>
 <h3 id="相关连接："><a href="#相关连接：" class="headerlink" title="相关连接："></a>相关连接：</h3><ul>
 <li>[^1]: generator: <em><a target="_blank" rel="noopener" href="https://javascript.info/generators">https://javascript.info/generators</a></em></li>
@@ -418,7 +647,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84-Event-Loop-%E8%AE%B2%E8%A7%A3-%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A"><span class="toc-text">「译」硬核到极致的 Event Loop 讲解,不信你看完还不会!</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-%E6%89%A7%E8%A1%8C%E5%8D%B4%E4%B8%8D%E9%98%BB%E5%A1%9E%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">JS 执行却不阻塞的秘密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">事件循环的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E6%98%AF%E6%80%8E%E4%B9%88%E8%BF%90%E4%BD%9C%E7%9A%84%EF%BC%9F"><span class="toc-text">事件循环是怎么运作的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%BF%9E%E6%8E%A5%EF%BC%9A"><span class="toc-text">相关连接：</span></a></li></ol></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%8C%E8%AF%91%E3%80%8D%E7%A1%AC%E6%A0%B8%E5%88%B0%E6%9E%81%E8%87%B4%E7%9A%84-Event-Loop-%E8%AE%B2%E8%A7%A3-%E4%B8%8D%E4%BF%A1%E4%BD%A0%E7%9C%8B%E5%AE%8C%E8%BF%98%E4%B8%8D%E4%BC%9A"><span class="toc-text">「译」硬核到极致的 Event Loop 讲解,不信你看完还不会!</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JS-%E6%89%A7%E8%A1%8C%E5%8D%B4%E4%B8%8D%E9%98%BB%E5%A1%9E%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">JS 执行却不阻塞的秘密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">事件循环的基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E6%98%AF%E6%80%8E%E4%B9%88%E8%BF%90%E4%BD%9C%E7%9A%84%EF%BC%9F"><span class="toc-text">事件循环是怎么运作的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E8%A7%84%E8%8C%83%E4%BA%86%E8%A7%A3%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-text">从规范了解事件循环</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%AE%E4%BB%BB%E5%8A%A1%E7%9A%84%E6%89%A7%E8%A1%8C%E7%AD%96%E7%95%A5"><span class="toc-text">微任务的执行策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E7%AD%94%E5%BC%80%E5%A4%B4%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-text">回答开头的问题：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%BF%9E%E6%8E%A5%EF%BC%9A"><span class="toc-text">相关连接：</span></a></li></ol></li></ol></li></ol>
   </aside>
 
         
